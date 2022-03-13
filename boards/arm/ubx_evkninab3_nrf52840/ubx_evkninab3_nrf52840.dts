@@ -202,7 +202,7 @@ arduino_i2c: &i2c0 {
 		};
 		scratch_partition: partition@da000 {
 			label = "image-scratch";
-			reg = <0x000da000 0x0001e000>;
+			reg = <0x000da000 0x00010000>;
 		};
 
 		/*
@@ -216,7 +216,7 @@ arduino_i2c: &i2c0 {
 		 */
 		storage_partition: partition@f8000 {
 			label = "storage";
-			reg = <0x000f8000 0x00008000>;
+			reg = <0x000ea000 0x000016000>;
 		};
 	};
 };
