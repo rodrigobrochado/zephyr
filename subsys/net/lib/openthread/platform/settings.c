@@ -217,6 +217,8 @@ otError otPlatSettingsGet(otInstance *aInstance, uint16_t aKey, int aIndex,
 		.status = -ENOENT,
 		.target_index = aIndex
 	};
+	int64_t timestamp;
+	int64_t delta;
 
 	ARG_UNUSED(aInstance);
 
@@ -225,7 +227,11 @@ otError otPlatSettingsGet(otInstance *aInstance, uint16_t aKey, int aIndex,
 	ret = snprintk(path, sizeof(path), "%s/%x", OT_SETTINGS_ROOT_KEY, aKey);
 	__ASSERT(ret < sizeof(path), "Setting path buffer too small.");
 
+	timestamp = k_uptime_get();
 	ret = settings_load_subtree_direct(path, ot_setting_read_cb, &read_ctx);
+	delta = k_uptime_delta(&timestamp);
+	LOG_WRN("Read in: %lldms", delta);
+
 	if (ret != 0) {
 		LOG_ERR("Failed to load OT setting aKey %d, aIndex %d, ret %d",
 			aKey, aIndex, ret);
@@ -269,18 +275,27 @@ otError otPlatSettingsAdd(otInstance *aInstance, uint16_t aKey,
 {
 	int ret;
 	char path[OT_SETTINGS_MAX_PATH_LEN];
+	int64_t timestamp;
+	int64_t delta;
 
 	ARG_UNUSED(aInstance);
 
 	LOG_DBG("%s Entry aKey %u", __func__, aKey);
 
+	timestamp = k_uptime_get();
 	do {
 		ret = snprintk(path, sizeof(path), "%s/%x/%08x",
 			       OT_SETTINGS_ROOT_KEY, aKey, sys_rand32_get());
 		__ASSERT(ret < sizeof(path), "Setting path buffer too small.");
 	} while (ot_setting_exists(path));
+	delta = k_uptime_delta(&timestamp);
+	LOG_WRN("Check in: %lldms", delta);
 
+	(void) k_uptime_delta(&timestamp);
 	ret = settings_save_one(path, aValue, aValueLength);
+	delta = k_uptime_delta(&timestamp);
+	LOG_WRN("Saved in: %lldms", delta);
+
 	if (ret != 0) {
 		LOG_ERR("Failed to store setting %d, ret %d", aKey, ret);
 		return OT_ERROR_NO_BUFS;

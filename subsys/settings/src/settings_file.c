@@ -375,11 +375,13 @@ static int settings_file_save_priv(struct settings_store *cs, const char *name,
 
 	fs_file_t_init(&file);
 
+	LOG_INF("%d/%d lines", cf->cf_lines, cf->cf_maxlines);
 	if (cf->cf_maxlines && (cf->cf_lines + 1 >= cf->cf_maxlines)) {
 		/*
 		 * Compress before config file size exceeds
 		 * the max number of lines.
 		 */
+		LOG_INF("compressing");
 		return settings_file_save_and_compress(cf, name, value,
 						       val_len);
 	}
